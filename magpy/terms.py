@@ -51,10 +51,9 @@ class Terms():
         else:
             tmp_term_size = len(tmp_term_type)
             if tmp_term_size != self._connections.ndim:
-                raise ValueError("Argument 'term_type' length must be same as "\
+                raise ValueError("Argument 'term_type' length must be same as "
                                  "dimension of 'connections'.")
-            else:
-                self._term_size = tmp_term_size
+            self._term_size = tmp_term_size
 
     @property
     def connections(self) -> ndarray:
@@ -74,21 +73,21 @@ class Terms():
                 warnings.warn("Casting argument 'connections' to bool",
                               UserWarning)
             except Exception as e:
-                raise TypeError("Argument 'connections' must contain dtype "\
-                    "bool.") from e
+                raise TypeError("Argument 'connections' must contain dtype "
+                                "bool.") from e
         if tmp_connections.ndim != self._term_size:
-            raise ValueError("Argument 'connections' must be same dimension "\
-                "as 'term_type' length.")
+            raise ValueError("Argument 'connections' must be same dimension "
+                             "as 'term_type' length.")
         if len(set(tmp_connections.shape)) > 1:
-            raise ValueError("Argument 'connections' must be have all axis "\
-                "same length.")
+            raise ValueError("Argument 'connections' must be have all axis "
+                             "same length.")
         tmp_non_zero_locs = array(nonzero(tmp_connections))
         # Note: this check is likely not a good implementation, and could be
         # improved for runtime
         for index_array in tmp_non_zero_locs.T:
             if unique(index_array).shape[0] != tmp_connections.ndim:
-                raise ValueError("Argument 'connections' must only have non "\
-                    "zero entries where all indexes are different")
+                raise ValueError("Argument 'connections' must only have non "
+                                 "zero entries where all indexes are different")
         self._non_zero_locs = tmp_non_zero_locs
         self._connections = tmp_connections
 
@@ -105,7 +104,7 @@ class Terms():
         self._nickname = value
 
     def generate_bsf(self) -> ndarray:
-        """Generate the BSF array for use in BSFSET"""
+        """Generate the BSF array for use in BSFSetBase"""
 
         # Figure out best int size for memory optimisation
         # Speed comparison should be made between using everything int8
@@ -126,7 +125,8 @@ class Terms():
         num_ints = -(dimension // -int_size)
 
         # Create array of zero bsfs, for each non zeros
-        bsf_array = zeros((len(self._non_zero_locs[0]), 2, num_ints), dtype=int_type)
+        bsf_array = zeros(
+            (len(self._non_zero_locs[0]), 2, num_ints), dtype=int_type)
 
         # Update each value with the operator, by adding each binary number
         for term, loc_array in zip(self._term_type, self._non_zero_locs):
@@ -145,4 +145,3 @@ class Terms():
                     bsf_array[index, 1, bit_loc] += 2 ** bit_power
 
         return bsf_array
-    

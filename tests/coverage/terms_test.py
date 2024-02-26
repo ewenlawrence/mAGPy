@@ -11,7 +11,7 @@ from magpy.terms import Terms
 
 def test_terms_bad_input():
     # Good inputs
-    good_term_type = 'XY'
+    good_term_type = 'Xy'
     good_connections = np.array([[0, 1, 0],
                                  [1, 0, 1],
                                  [0, 1, 0]]).astype(bool)
@@ -92,10 +92,10 @@ def test_terms_bad_input():
                                            [0, 0, 0],
                                            [0, 0, 0]]).astype(bool)
     with pytest.warns(UserWarning):  # non bool input, but can be cast to bool
-        good_terms.connections=[[0, 1, 0],
-                           [0, 0, 0],
-                           [0, 0, 0]]
-        
+        good_terms.connections = [[0, 1, 0],
+                                  [0, 0, 0],
+                                  [0, 0, 0]]
+
     # Nickname
     with pytest.raises(TypeError):  # bad type
         good_terms.nickname = False
@@ -107,10 +107,9 @@ def test_terms():
     connections_A = np.array([[0, 1, 0],
                               [1, 0, 1],
                               [0, 1, 0]]).astype(bool)
-    nickname_A = "Test_A"
 
     # Inputs B
-    term_type_B = 'XZ'
+    term_type_B = 'xz'
     connections_B = np.array([[0, 0, 1],
                               [0, 0, 0],
                               [1, 0, 0]]).astype(bool)
@@ -136,13 +135,12 @@ def test_terms():
 
     # Create terms A
     terms_A = Terms(term_type=term_type_A,
-                    connections=connections_A,
-                    nickname=nickname_A)
+                    connections=connections_A)
 
     # Retrieve attributes
-    assert terms_A.term_type == term_type_A
+    assert terms_A.term_type == term_type_A.upper()
     assert np.array_equal(terms_A.connections, connections_A)
-    assert terms_A.nickname == nickname_A
+    assert terms_A.nickname == "Terms object"
     assert terms_A._term_size == 2
 
     # Compute bsf array
@@ -154,7 +152,7 @@ def test_terms():
     terms_A.nickname = nickname_B
 
     # Retrieve attributes
-    assert terms_A.term_type == term_type_B
+    assert terms_A.term_type == term_type_B.upper()
     assert np.array_equal(terms_A.connections, connections_B)
     assert terms_A.nickname == nickname_B
     assert terms_A._term_size == 2
@@ -168,7 +166,7 @@ def test_terms():
                     nickname=nickname_C)
 
     # Retrieve attributes
-    assert terms_C.term_type == term_type_C
+    assert terms_C.term_type == term_type_C.upper()
     assert np.array_equal(terms_C.connections, connections_C)
     assert terms_C.nickname == nickname_C
     assert terms_C._term_size == 1
