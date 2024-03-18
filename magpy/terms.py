@@ -129,19 +129,20 @@ class Terms():
             (len(self._non_zero_locs[0]), 2, num_ints), dtype=int_type)
 
         # Update each value with the operator, by adding each binary number
+        int_1 = int_type(1)
         for term, loc_array in zip(self._term_type, self._non_zero_locs):
             # Loop over each location
             for index, loc in enumerate(loc_array):
                 # Find which bit represents the location
                 bit_loc = loc // int_size
-                bit_power = loc % int_size
+                bit_power = int_type(loc % int_size)
                 # Add the term
                 if term == 'X':
-                    bsf_array[index, 0, bit_loc] += 2 ** bit_power
+                    bsf_array[index, 0, bit_loc] += int_1 << bit_power
                 elif term == 'Z':
-                    bsf_array[index, 1, bit_loc] += 2 ** bit_power
+                    bsf_array[index, 1, bit_loc] += int_1 << bit_power
                 elif term == 'Y':
-                    bsf_array[index, 0, bit_loc] += 2 ** bit_power
-                    bsf_array[index, 1, bit_loc] += 2 ** bit_power
+                    bsf_array[index, 0, bit_loc] += int_1 << bit_power
+                    bsf_array[index, 1, bit_loc] += int_1 << bit_power
 
         return bsf_array
