@@ -310,8 +310,10 @@ class LinkedBSFSet(BSFSetBase):
 
                                 # how many plus signs
                                 # (may be able to simplify this term)
-                                p_loc = ((ham_term[0][bit_num] & term[1][bit_num]) ^
-                                         (f_locs[bit_num] & (tmp_x & tmp_z))) & f_locs[bit_num]
+                                p_loc = ((ham_term[0][bit_num] & \
+                                    term[1][bit_num]) ^
+                                         (f_locs[bit_num] & (tmp_x & tmp_z))) \
+                                             & f_locs[bit_num]
                                 p_count += popcount(int(p_loc))
 
                             # figure out the phase/sign
@@ -327,9 +329,9 @@ class LinkedBSFSet(BSFSetBase):
                             # Add to terms and magnitudes
                             var_commuted_terms.append(new_term)
                             if phase > 1:
-                                var_commuted_magnitudes.append(-1 *ham_mag)
+                                var_commuted_magnitudes.append(-2 * ham_mag)
                             else:
-                                var_commuted_magnitudes.append( ham_mag)
+                                var_commuted_magnitudes.append(2 * ham_mag)
 
                             # Track where it came from
                             var_from.append(from_index)
@@ -599,12 +601,12 @@ class OddSet(LinkedBSFSet):
                     raise TypeError("Argument 'right_map' data type must be "
                                     "subclass of numpy.floating.")
                 if tmp_var_right_map.shape[0] != self._right_set._num_terms:
-                    raise ValueError("Argument 'right_map' must have the number "
-                                     "of rows equal to the number of "
+                    raise ValueError("Argument 'right_map' must have the number"
+                                     " of rows equal to the number of "
                                      "magnitudes/terms in right set")
                 if tmp_var_right_map.shape[1] != self._num_terms:
-                    raise ValueError("Argument 'right_map' must have the number "
-                                     "of columns equal to the number of "
+                    raise ValueError("Argument 'right_map' must have the number"
+                                     " of columns equal to the number of "
                                      "magnitudes/terms of itself")
             self._right_map = value
 

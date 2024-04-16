@@ -358,14 +358,14 @@ def test_linked_bsf_set():
     exp_commuted_terms_A = [np.array([[[1], [3]], [[2], [3]]], dtype=np.int8)]
     exp_maps_A = [sp.csr_array([[0.0, 0.0],
                                [0.0, 0.0]]),
-                  sp.csr_array([[1.0, 0.0],
-                                [0.0, 1.0]])]
+                  sp.csr_array([[2.0, 0.0],
+                                [0.0, 2.0]])]
 
     # Expected outputs B
     exp_bsf_array_B = [np.array([[[0], [3]]], dtype=np.int8)]
     exp_commuted_terms_B = [np.array([[[1], [3]], [[2], [3]]], dtype=np.int8)]
-    exp_maps_B = [sp.csr_array([[-2.0],
-                               [-2.0]]),
+    exp_maps_B = [sp.csr_array([[-4.0],
+                               [-4.0]]),
                   sp.csr_array([[0.0],
                                 [0.0]])]
 
@@ -448,10 +448,10 @@ def test_linked_bsf_set_large():
                                           [[1, 0], [3, 0]],
                                           [[2, 0], [3, 0]]],
                                          dtype=np.int64)]
-    large_exp_maps = [sp.csr_array([[0.0, -1.0],
-                                    [0.0, -1.0],
-                                    [-1.0, 0.0],
-                                    [-1.0, 0.0]]),
+    large_exp_maps = [sp.csr_array([[0.0, -2.0],
+                                    [0.0, -2.0],
+                                    [-2.0, 0.0],
+                                    [-2.0, 0.0]]),
                       sp.csr_array([[0.0, 0.0],
                                     [0.0, 0.0],
                                     [0.0, 0.0],
@@ -507,7 +507,7 @@ def test_many_body_commute():
     # Expected output
     many_exp_commuted_terms = [np.array([[[8], [7]]],
                                          dtype=np.int8)]
-    many_exp_maps = [sp.csr_array([[-1.0]])]
+    many_exp_maps = [sp.csr_array([[-2.0]])]
 
     # Setup 
     many_linkedbsfset = LinkedBSFSet(input_terms=[terms_YYY],
@@ -551,7 +551,7 @@ def test_large_many_body_commute():
     # Expected output
     large_many_exp_commuted_terms = [np.array([[[53], [45]]],
                                          dtype=np.int8)]
-    large_many_exp_maps = [sp.csr_array([[-1.0]])]
+    large_many_exp_maps = [sp.csr_array([[-2.0]])]
 
     # Setup 
     large_many_linkedbsfset = LinkedBSFSet(input_terms=[terms_ZYXYZX],
@@ -591,8 +591,8 @@ def test_even_set():
     # Expected odd (right) set attributes
     exp_left_map = [sp.csc_array([[0.0, 0.0],
                                   [0.0, 0.0]]),
-                    sp.csc_array([[-1.0, 0],
-                                  [0, -1.0]])]
+                    sp.csc_array([[-2.0, 0],
+                                  [0, -2.0]])]
     exp_bsf_array = [np.array([[[1], [3]],
                                [[2], [3]]],
                               dtype=np.int8)]
@@ -634,10 +634,10 @@ def test_odd_set_bad_input():
     good_nickname = "test"
     good_left_map = [sp.csc_array([[0.0, 0.0],
                                    [0.0, 0.0]]),
-                     sp.csc_array([[-1.0, 0],
-                                   [0, -1.0]])]
-    good_right_map = [sp.csr_array([[1.0, 1.0],
-                                   [-1.0, -1.0]]),
+                     sp.csc_array([[-2.0, 0],
+                                   [0, -2.0]])]
+    good_right_map = [sp.csr_array([[2.0, 2.0],
+                                   [-2.0, -2.0]]),
                       sp.csr_array([[0.0, 0],
                                    [0, 0.0]])]
 
@@ -687,8 +687,8 @@ def test_odd_set_bad_input():
                left_map=[sp.csc_array([[0.0, 0.0],
                                        [0.0, 0.0],
                                        [0.0, 0.0]]),
-                         sp.csc_array([[-1.0, 0.0],
-                                       [0.0, -1.0]])],
+                         sp.csc_array([[-2.0, 0.0],
+                                       [0.0, -2.0]])],
                nickname=good_nickname)
 
     with pytest.raises(ValueError):  # wrong number of columns
@@ -698,8 +698,8 @@ def test_odd_set_bad_input():
                left_set=good_left_set,
                left_map=[sp.csc_array([[0.0, 0.0],
                                        [0.0, 0.0]]),
-                         sp.csc_array([[-1.0, 0.0, 0.0],
-                                       [0.0, -1.0, 0.0]])],
+                         sp.csc_array([[-2.0, 0.0, 0.0],
+                                       [0.0, -2.0, 0.0]])],
                nickname=good_nickname)
 
     # Create good OddSet
@@ -744,14 +744,14 @@ def test_odd_set_bad_input():
         good_odd_set.right_map = [sp.csc_array([[0.0, 0.0],
                                                 [0.0, 0.0],
                                                 [0.0, 0.0]]),
-                                  sp.csc_array([[-1.0, 0.0],
-                                                [0.0, -1.0]])]
+                                  sp.csc_array([[-2.0, 0.0],
+                                                [0.0, -2.0]])]
 
     with pytest.raises(ValueError):  # wrong number of columns
         good_odd_set.right_map = [sp.csc_array([[0.0, 0.0],
                                                [0.0, 0.0]]),
-                                  sp.csc_array([[-1.0, 0.0, 0.0],
-                                               [0.0, -1.0, 0.0]])]
+                                  sp.csc_array([[-2.0, 0.0, 0.0],
+                                               [0.0, -2.0, 0.0]])]
 
     # set good right map
     good_odd_set.right_map = good_right_map
@@ -785,8 +785,8 @@ def test_odd_set():
                       variable_names=["X", "ZZ"])
 
     # Expected attributes
-    exp_right_map = [sp.csr_array([[1.0, 1.0],
-                                   [-1.0, -1.0]]),
+    exp_right_map = [sp.csr_array([[2.0, 2.0],
+                                   [-2.0, -2.0]]),
                      sp.csr_array([[0.0, 0.0],
                                    [0.0, 0.0]])]
     exp_right_bsf_array = [np.array([[[0], [3]],
@@ -804,8 +804,8 @@ def test_odd_set():
                        left_set=left_set_A,
                        left_map=[sp.csc_array([[0.0, 0.0],
                                                [0.0, 0.0]]),
-                                 sp.csc_array([[-1.0, 0],
-                                               [0, -1.0]])])
+                                 sp.csc_array([[-2.0, 0],
+                                               [0, -2.0]])])
     odd_set_A.generate_even()
 
     # Check attributes
