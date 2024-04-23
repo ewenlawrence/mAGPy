@@ -3,7 +3,7 @@ from typing import List, Union, Optional
 from magpy.terms import Terms
 
 from numpy import ndarray, integer, floating
-from numpy import array, issubdtype, ones, unique, zeros, concatenate
+from numpy import array, issubdtype, ones, unique, zeros, concatenate, sort
 from numpy import sum as numpy_sum
 from numpy import append as numpy_append
 from numpy.typing import ArrayLike
@@ -353,12 +353,18 @@ class LinkedBSFSet(BSFSetBase):
                         commuted_terms, var_commuted_terms))
                     starting_index = len(commuted_terms)
 
+                # BUG does not preserve order of terms, 
+                # so previous maps get broken
                 # Now group any terms that are the same
-                commuted_terms, new_indexes = unique(
+                commuted_terms, sorting_idx, indexes = unique(
                     tmp_duplicate_commuted_terms,
                     axis=0,
-                    return_inverse=True)
-
+                    return_index=True,
+                    return_inverse=True
+                    )
+                # re adjust the ordering
+                commuted_terms = commuted_terms[sort(sorting_idx)]
+                new_indexes = array([sorting_idx[ind] for ind in indexes])
                 tmp_num_terms = new_indexes.max() + 1
 
                 # setup arrays

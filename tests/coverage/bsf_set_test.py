@@ -448,10 +448,10 @@ def test_linked_bsf_set_large():
                                           [[1, 0], [3, 0]],
                                           [[2, 0], [3, 0]]],
                                          dtype=np.int64)]
-    large_exp_maps = [sp.csr_array([[0.0, -2.0],
-                                    [0.0, -2.0],
+    large_exp_maps = [sp.csr_array([[-2.0, 0.0],
                                     [-2.0, 0.0],
-                                    [-2.0, 0.0]]),
+                                    [0.0, -2.0],
+                                    [0.0, -2.0]]),
                       sp.csr_array([[0.0, 0.0],
                                     [0.0, 0.0],
                                     [0.0, 0.0],
