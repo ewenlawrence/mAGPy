@@ -1,5 +1,16 @@
-from magpy.hamiltonian import Hamiltonian
-from magpy.bsf_set import OddSet
+#    Copyright 2024 Ewen Lawrence
+
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+
+#        http://www.apache.org/licenses/LICENSE-2.0
+
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 
 from typing import List
 
@@ -7,7 +18,12 @@ import warnings
 from numpy import issubdtype, array
 from numpy import integer, ndarray, floating
 
+from magpy.hamiltonian import Hamiltonian
+from magpy.linked_set import OddSet
+from magpy.decorators import add_nickname, immutable
 
+
+@add_nickname("AGP object")
 class AGP:
 
     def __init__(self,
@@ -20,10 +36,6 @@ class AGP:
                  exact: bool,
                  nickname: str = None):
 
-        # Default values
-        if nickname is None:
-            nickname = "AGP object"
-
         # Set attributes
         self.hamiltonian = hamiltonian
         self.lambda_index = lambda_index
@@ -32,7 +44,8 @@ class AGP:
         self.operators = operators
         self.coefficients = coefficients
         self.exact = exact
-        self.nickname = nickname
+        if not nickname is None:
+            self.nickname = nickname
 
     def __repr__(self) -> str:
         return "TODO"
@@ -46,20 +59,13 @@ class AGP:
         return self._hamiltonian
 
     @hamiltonian.setter
+    @immutable("hamiltonian")
     def hamiltonian(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._hamiltonian
-            raise ValueError("Argument 'hamiltonian' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            # Check input of hamiltonian
-            if not isinstance(value, Hamiltonian):
-                raise TypeError("Argument 'hamiltonian' must be of type "
-                                "Hamiltonian")
-            self._hamiltonian = value
+        # Check input of hamiltonian
+        if not isinstance(value, Hamiltonian):
+            raise TypeError("Argument 'hamiltonian' must be of type "
+                            "Hamiltonian")
+        self._hamiltonian = value
 
     @property
     def lambda_index(self):
@@ -67,22 +73,15 @@ class AGP:
         return self._lambda_index
 
     @lambda_index.setter
+    @immutable("lambda_index")
     def lambda_index(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._lambda_index
-            raise ValueError("Argument 'lambda_index' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            # Check input of lambda_index
-            if not issubdtype(type(value), integer):
-                raise TypeError("Argument 'lambda_index' must be an integer")
-            if value >= len(self._hamiltonian.variable_names):
-                raise ValueError("Argument 'lambda_index' must be a valid index "
-                                 "for the hamiltonian lambda names")
-            self._lambda_index = value
+        # Check input of lambda_index
+        if not issubdtype(type(value), integer):
+            raise TypeError("Argument 'lambda_index' must be an integer")
+        if value >= len(self._hamiltonian.variable_names):
+            raise ValueError("Argument 'lambda_index' must be a valid index "
+                                "for the hamiltonian lambda names")
+        self._lambda_index = value
 
     def _parse_lambda_values(self, value):
         try:
@@ -109,16 +108,9 @@ class AGP:
         return self._lambda_values
 
     @lambda_values.setter
+    @immutable("lambda_values")
     def lambda_values(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._lambda_values
-            raise ValueError("Argument 'lambda_values' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            self._lambda_values = self._parse_lambda_values(value=value)
+        self._lambda_values = self._parse_lambda_values(value=value)
 
     def _parse_constant_values(self, value):
         try:
@@ -148,16 +140,9 @@ class AGP:
         return self._constant_values
 
     @constant_values.setter
+    @immutable("constant_values")
     def constant_values(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._constant_values
-            raise ValueError("Argument 'constant_values' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            self._constant_values = self._parse_constant_values(value=value)
+        self._constant_values = self._parse_constant_values(value=value)
 
     @property
     def operators(self):
@@ -189,22 +174,16 @@ class AGP:
         return self._coefficients
 
     @coefficients.setter
+    @immutable("coefficients")
     def coefficients(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._coefficients
-            raise ValueError("Argument 'coefficients' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            if not isinstance(value, ndarray):
-                raise TypeError(
-                    "Argument 'coefficients' should be type ndarray")
-            if not issubdtype(value.dtype, floating):
-                raise TypeError("Argument 'coefficients' should have have dtype "
-                                "that is subtype of floating")
-            self._coefficients = value
+        # check the input of coefficients
+        if not isinstance(value, ndarray):
+            raise TypeError(
+                "Argument 'coefficients' should be type ndarray")
+        if not issubdtype(value.dtype, floating):
+            raise TypeError("Argument 'coefficients' should have have dtype "
+                            "that is subtype of floating")
+        self._coefficients = value
 
     @property
     def exact(self):
@@ -212,27 +191,9 @@ class AGP:
         return self._exact
 
     @exact.setter
+    @immutable("exact")
     def exact(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._exact
-            raise ValueError("Argument 'exact' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            if not isinstance(value, bool):
-                raise TypeError("Argument 'exact' should be of type bool")
-            self._exact = value
-
-    @property
-    def nickname(self):
-        """Nickname of MetaGraph class"""
-        return self._nickname
-
-    @nickname.setter
-    def nickname(self, value):
-        # Check input of nickname
-        if not isinstance(value, str):
-            raise TypeError("Argument 'nickname' must be str.")
-        self._nickname = value
+        # Type check the value fo exact
+        if not isinstance(value, bool):
+            raise TypeError("Argument 'exact' should be of type bool")
+        self._exact = value

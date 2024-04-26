@@ -1,19 +1,43 @@
+#    Copyright 2024 Ewen Lawrence
+
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+
+#        http://www.apache.org/licenses/LICENSE-2.0
+
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+"""Module for handling Hamiltonians for the use of commutation
+"""
 from typing import List, Optional
 
 from magpy.bsf_set import BSFSetBase
+from magpy.decorators import add_nickname
 
-
+@add_nickname("Hamiltonian object")
 class Hamiltonian:
-
+    """Class of the hamiltonian
+    """
     def __init__(self,
                  list_of_bsf: List[BSFSetBase],
                  variable_names: List[str],
                  nickname: Optional[str] = None):
-        """Create a Hamiltonian object"""
+        """Create Hamiltonian object
 
-        # Default values
-        if nickname is None:
-            nickname = "Hamiltonian object"
+        Parameters
+        ----------
+        list_of_bsf : List[BSFSetBase]
+            list of BSFSetBase for each of the variables
+        variable_names : List[str]
+            associated names of each of the variables in the list_of_bsf
+        nickname : Optional[str], optional
+            nickname for the class, by default "Hamiltonian object"
+        """
 
         # Initial values (for type checking ordering)
         self._num_variables = None
@@ -21,7 +45,8 @@ class Hamiltonian:
         # Set values (using setter method)
         self.list_of_bsf = list_of_bsf
         self.variable_names = variable_names
-        self.nickname = nickname
+        if not nickname is None:
+            self.nickname = nickname
 
     def __repr__(self) -> str:
         return f"Hamiltonian({self.list_of_bsf}, {self.variable_names}, "\
@@ -68,15 +93,3 @@ class Hamiltonian:
             raise ValueError("Argument 'variable_names' must be same "
                              "length as the number of bsf sets")
         self._variable_names = value
-
-    @property
-    def nickname(self):
-        """Nickname of Hamiltonian class"""
-        return self._nickname
-
-    @nickname.setter
-    def nickname(self, value):
-        # Check input of nickname
-        if not isinstance(value, str):
-            raise TypeError("Argument 'nickname' must be str.")
-        self._nickname = value

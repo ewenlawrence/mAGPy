@@ -1,3 +1,20 @@
+#    Copyright 2024 Ewen Lawrence
+
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+
+#        http://www.apache.org/licenses/LICENSE-2.0
+
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+"""Module for handling the generation of bsf arrays
+"""
+
 from typing import Optional
 import warnings
 
@@ -5,18 +22,29 @@ from numpy import ndarray, uint8, uint16, uint32, uint64
 from numpy import array, nonzero, zeros, unique
 from numpy.typing import ArrayLike
 
+from magpy.decorators import add_nickname
 
+@add_nickname("Terms object")
 class Terms():
+    """Class for creating bsf arrays from pauli strings
+    """
 
     def __init__(self,
                  term_type: str,
                  connections: ArrayLike,
                  nickname: Optional[str] = None):
-        """Create a Terms object"""
+        """Create a Terms object
 
-        # Default values
-        if nickname is None:
-            nickname = "Terms object"
+        Parameters
+        ----------
+        term_type : str
+            string of pauli terms such as 'XZY'
+        connections : ArrayLike
+            array of locations of each term, each axis refers to each operator
+            in the term_type string (for 'XZY' axis 0 is X)
+        nickname : Optional[str], optional
+            nickname for the class, by default "Terms object"
+        """
 
         # Initial values (for type checking ordering)
         self._term_size = None
@@ -24,13 +52,14 @@ class Terms():
         # Set values (using setter method)
         self.term_type = term_type
         self.connections = connections
-        self.nickname = nickname
+        if not nickname is None:
+            self.nickname = nickname
 
     def __repr__(self) -> str:
-        return f"Terms({self._term_type, self._connections, self._nickname})"
+        return f"Terms({self.term_type, self.connections, self.nickname})"
 
     def __str__(self) -> str:
-        return f"{self._nickname} using {self._term_type} operator"
+        return f"{self.nickname} using {self.term_type} operator"
 
     @property
     def term_type(self) -> str:
@@ -90,18 +119,6 @@ class Terms():
                                  "zero entries where all indexes are different")
         self._non_zero_locs = tmp_non_zero_locs
         self._connections = tmp_connections
-
-    @property
-    def nickname(self) -> str:
-        """Nickname of terms object"""
-        return self._nickname
-
-    @nickname.setter
-    def nickname(self, value):
-        # Check input of nickname
-        if not isinstance(value, str):
-            raise TypeError("Argument 'nickname' must be str.")
-        self._nickname = value
 
     def generate_bsf(self) -> ndarray:
         """Generate the BSF array for use in BSFSetBase"""

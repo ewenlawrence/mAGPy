@@ -1,16 +1,33 @@
-from magpy.bsf_set import EvenSet
-from magpy.hamiltonian import Hamiltonian
-from magpy.agp import AGP
+#    Copyright 2024 Ewen Lawrence
+
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+
+#        http://www.apache.org/licenses/LICENSE-2.0
+
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+"""Module for generating an AGP object via a meta graph approach
+"""
 
 import warnings
 
-from numpy import concatenate, issubdtype, array, shape, zeros, pad
+from numpy import concatenate, issubdtype, array, shape, pad
 from numpy.linalg import solve as numpy_solve
 from numpy import integer
 from scipy.linalg import block_diag
-from scipy.sparse import csr_array
 
+from magpy.linked_set import EvenSet
+from magpy.hamiltonian import Hamiltonian
+from magpy.agp import AGP
+from magpy.decorators import add_nickname, immutable
 
+@add_nickname("MetaGraph object")
 class MetaGraph:
 
     def __init__(self,
@@ -18,9 +35,6 @@ class MetaGraph:
                  lambda_index: integer,
                  nickname: str = None):
 
-        # Default values
-        if nickname is None:
-            nickname = "MetaGraph object"
         self._exact = False
 
         # Setup initially empty attributes
@@ -39,7 +53,8 @@ class MetaGraph:
         # Set attributes
         self.hamiltonian = hamiltonian
         self.lambda_index = lambda_index
-        self.nickname = nickname
+        if not nickname is None:
+            self.nickname = nickname
 
     def __repr__(self):
         return "TODO"
@@ -53,20 +68,13 @@ class MetaGraph:
         return self._hamiltonian
 
     @hamiltonian.setter
+    @immutable("hamiltonian")
     def hamiltonian(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._hamiltonian
-            raise ValueError("Argument 'hamiltonian' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            # Check input of hamiltonian
-            if not isinstance(value, Hamiltonian):
-                raise TypeError("Argument 'hamiltonian' must be of type "
-                                "Hamiltonian")
-            self._hamiltonian = value
+        # Check input of hamiltonian
+        if not isinstance(value, Hamiltonian):
+            raise TypeError("Argument 'hamiltonian' must be of type "
+                            "Hamiltonian")
+        self._hamiltonian = value
 
     @property
     def lambda_index(self):
@@ -103,18 +111,6 @@ class MetaGraph:
             # Setup sets
             self._odd_sets = []
             self._even_sets = [even_set_0]
-
-    @property
-    def nickname(self):
-        """Nickname of MetaGraph class"""
-        return self._nickname
-
-    @nickname.setter
-    def nickname(self, value):
-        # Check input of nickname
-        if not isinstance(value, str):
-            raise TypeError("Argument 'nickname' must be str.")
-        self._nickname = value
 
     def _parse_max_odd(self, value):
         if not issubdtype(type(value), integer):

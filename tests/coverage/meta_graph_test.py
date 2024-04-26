@@ -3,7 +3,8 @@ Tests for agp python file
 """
 
 from magpy.terms import Terms
-from magpy.bsf_set import BSFSetBase, EvenSet, OddSet
+from magpy.bsf_set import BSFSetBase
+from magpy.linked_set import EvenSet
 from magpy.hamiltonian import Hamiltonian
 from magpy.meta_graph import MetaGraph
 

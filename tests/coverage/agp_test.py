@@ -5,7 +5,8 @@ Tests for agp python file
 import pytest
 
 from magpy.terms import Terms
-from magpy.bsf_set import BSFSetBase, OddSet, EvenSet
+from magpy.bsf_set import BSFSetBase
+from magpy.linked_set import OddSet, EvenSet
 from magpy.hamiltonian import Hamiltonian
 from magpy.agp import AGP
 
@@ -45,7 +46,7 @@ def test_agp_bad_input():
                                                      [0.0, 0.0]]),
                                        sp.csr_array([[-2.0, 0.0],
                                                      [0.0, -2.0]])])]
-    good_coefficients = np.array([0.5,1.0,0.1])
+    good_coefficients = np.array([0.5, 1.0, 0.1])
     good_exact = True
     good_nickname = "Two qubit"
 
@@ -216,7 +217,7 @@ def test_agp_bad_input():
             coefficients=good_coefficients,
             exact="bla",
             nickname=good_nickname)
-        
+
     # nickname
     with pytest.raises(TypeError):
         AGP(hamiltonian=good_hamiltonian,
@@ -237,7 +238,7 @@ def test_agp_bad_input():
                    coefficients=good_coefficients,
                    exact=good_exact,
                    nickname=good_nickname)
-    
+
     # Changing input (all immutable except nickname)
     # hamiltonian
     with pytest.raises(ValueError):
@@ -304,7 +305,7 @@ def test_agp():
                                                   [0.0, 0.0]]),
                                     sp.csr_array([[-2.0, 0.0],
                                                   [0.0, -2.0]])])]
-    coefficients_A = np.array([0.5,1.0,0.1])
+    coefficients_A = np.array([0.5, 1.0, 0.1])
     exact_A = True
 
     agp_A = AGP(hamiltonian=hamiltonian_A,
