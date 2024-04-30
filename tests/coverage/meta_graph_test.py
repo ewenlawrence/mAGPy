@@ -210,7 +210,7 @@ def test_meta_graph():
     assert np.array_equal(computed_agp_ops_A, exp_agp_ops_A)
 
     # Check numpy solution is correct
-    agp_A = meta_graph_A.compute_AGP(lambda_values=lambda_values_A,
+    agp_A = meta_graph_A.compute_agp(lambda_values=lambda_values_A,
                                      constant_values=constant_values_A,
                                      max_odd=max_odd_A,
                                      solver='numpy')
@@ -245,7 +245,7 @@ def test_meta_graph():
     assert np.array_equal(computed_agp_ops_B, exp_agp_ops_B)
 
     # Check numpy solution is correct
-    agp_B = meta_graph_A.compute_AGP(lambda_values=lambda_values_B,
+    agp_B = meta_graph_A.compute_agp(lambda_values=lambda_values_B,
                                      constant_values=constant_values_B,
                                      max_odd=max_odd_B,
                                      solver='numpy')

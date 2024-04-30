@@ -13,6 +13,9 @@
 #    limitations under the License.
 
 """Module for user friendly BSF manipulation"""
+# Disable pylint errors for todo statements
+# pylint: disable=fixme
+
 from numpy.typing import ArrayLike
 
 

@@ -14,6 +14,12 @@
 
 # pylint: disable=no-name-in-module
 # gmpy2 has error with name for popcount
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+# Other pylint errors will be fixed when the commute is rewritten
+# pylint: disable=duplicate-code
+# disable duplicate code for now, as there are shared attributes here
+# in a code cleanup this can be refactored
+
 
 """Module for creating linked sets that make up the meta graph
 """
@@ -32,6 +38,8 @@ from magpy.bsf_set import BSFSetBase
 from magpy.decorators import immutable
 
 class LinkedBSFSet(BSFSetBase):
+    """Class for linked sets of bsf operators (parent class:BSFSetBase)
+    """
 
     def __init__(self,
                  input_terms: List[Union[Terms, ndarray]],
@@ -39,6 +47,22 @@ class LinkedBSFSet(BSFSetBase):
                  hamiltonian: Hamiltonian,
                  left_set: Optional["LinkedBSFSet"] = None,
                  nickname: Optional[str] = None):
+        """Create LinkedBSFSet object
+
+        Parameters
+        ----------
+        input_terms : List[Union[Terms, ndarray]]
+            input for the operators, should contain either Terms object that
+            generate the bsf arrays, or the explicit bsf array in ndarray form
+        magnitudes : ArrayLike
+            magnitudes associated with each input term
+        hamiltonian : Hamiltonian
+            hamiltonian of the system
+        left_set : LinkedBSFSet, optional
+            linked set to the left, by default None
+        nickname : str, optional
+            nickname of class, by default "LinkedBSFSet object"
+        """
         # Default values
         if nickname is None:
             nickname = "LinkedBSFSet object"
@@ -48,14 +72,14 @@ class LinkedBSFSet(BSFSetBase):
                          magnitudes=magnitudes,
                          nickname=nickname)
 
-        # Initial values (for type checking ordering)
-
         # Set values (using setter method)
         self.hamiltonian = hamiltonian
         if left_set is None:
             self._left_set = left_set
         else:
             self.left_set = left_set
+
+        self._right_set = None
 
         # Figure out how many unique terms in object
         count = 0
@@ -98,9 +122,9 @@ class LinkedBSFSet(BSFSetBase):
         if not isinstance(value, LinkedBSFSet):
             raise TypeError("Argument 'left_set' must be of type or child "
                             "of LinkedBSFSet")
-        if value._hamiltonian != self._hamiltonian:
+        if value.hamiltonian != self.hamiltonian:
             raise ValueError("Argument 'left_set' must have same "
-                                "hamiltonian")
+                             "hamiltonian")
         self._left_set = value
 
     @property
@@ -118,10 +142,15 @@ class LinkedBSFSet(BSFSetBase):
         if not isinstance(value, LinkedBSFSet):
             raise TypeError("Argument 'right_set' must be of type or child "
                             "of LinkedBSFSet")
-        if value._hamiltonian != self._hamiltonian:
+        if value.hamiltonian != self.hamiltonian:
             raise ValueError("Argument 'right_set' must have same "
-                                "hamiltonian")
+                             "hamiltonian")
         self._right_set = value
+
+    @property
+    def num_terms(self):
+        """Number of terms in set"""
+        return self._num_terms
 
     def commute(self) -> tuple[ndarray]:
         """Commute the set with the Hamiltonian and generate set to the right"""
@@ -141,7 +170,7 @@ class LinkedBSFSet(BSFSetBase):
             if self.left_set is None:
                 left_check = []
             else:
-                left_check = self.left_set._bsf_array[0].tolist()
+                left_check = self.left_set.bsf_array[0].tolist()
 
             # Setup list for var
             var_commuted_terms = []
@@ -149,8 +178,8 @@ class LinkedBSFSet(BSFSetBase):
             var_from = []
 
             # Loop over each hamiltonian term magnitude
-            for ham_term_array, ham_mag in zip(ham_var_bsf_set._bsf_array,
-                                               ham_var_bsf_set._magnitudes):
+            for ham_term_array, ham_mag in zip(ham_var_bsf_set.bsf_array,
+                                               ham_var_bsf_set.magnitudes):
 
                 # loop over each individual bsf term in ham
                 for ham_term in ham_term_array:
@@ -333,12 +362,30 @@ class LinkedBSFSet(BSFSetBase):
 
 
 class EvenSet(LinkedBSFSet):
+    """Class for even set (parent class:LinkedBSFSet)
+    """
     def __init__(self,
                  input_terms: List[Union[Terms, ndarray]],
                  magnitudes: ArrayLike,
                  hamiltonian: Hamiltonian,
                  left_set: Optional[LinkedBSFSet] = None,
                  nickname: Optional[str] = None):
+        """Create EvenSet object
+
+        Parameters
+        ----------
+        input_terms : List[Union[Terms, ndarray]]
+            input for the operators, should contain either Terms object that
+            generate the bsf arrays, or the explicit bsf array in ndarray form
+        magnitudes : ArrayLike
+            magnitudes associated with each input term
+        hamiltonian : Hamiltonian
+            hamiltonian of the system
+        left_set : LinkedBSFSet, optional
+            linked set to the left, by default None
+        nickname : str, optional
+            nickname of class, by default "EvenSet object"
+        """
         # Default values
         if nickname is None:
             nickname = "EvenSet object"
@@ -355,9 +402,6 @@ class EvenSet(LinkedBSFSet):
             f"{self.nickname}, {self.hamiltonian}, {self.left_set}, "\
             f"{self.right_set})"
 
-    def __str__(self) -> str:
-        return super().__str__()
-
     def generate_odd(self):
         """Generate the next odd set"""
         # Call parent function to generate the map and next set
@@ -367,8 +411,8 @@ class EvenSet(LinkedBSFSet):
         else:
             # Adjust the map such that it goes odd -> even
             maps_from_odd = []
-            for map in maps_to_odd:
-                maps_from_odd.append(-1 * map.T)
+            for map_i in maps_to_odd:
+                maps_from_odd.append(-1 * map_i.T)
 
             # Create OddSet object and assign to right_set
             self.right_set = OddSet(input_terms=[odd_input_terms],
@@ -380,6 +424,7 @@ class EvenSet(LinkedBSFSet):
 
 
 class OddSet(LinkedBSFSet):
+    """Class for OddSet (parent class: LinkedBSFSet)"""
 
     def __init__(self,
                  input_terms: List[Union[Terms, ndarray]],
@@ -388,6 +433,24 @@ class OddSet(LinkedBSFSet):
                  left_set: LinkedBSFSet,
                  left_map: List[Union[csr_array, csc_array]],
                  nickname: Optional[str] = None):
+        """Create OddSet
+
+        Parameters
+        ----------
+        input_terms : List[Union[Terms, ndarray]]
+            input for the operators, should contain either Terms object that
+            generate the bsf arrays, or the explicit bsf array in ndarray form
+        magnitudes : ArrayLike
+            magnitudes associated with each input term
+        hamiltonian : Hamiltonian
+            hamiltonian of the system
+        left_set : LinkedBSFSet, optional
+            linked set to the left, by default None
+        left_map : List[Union[csr_array, csc_array]]
+            mapping to left set
+        nickname : str, optional
+            nickname of class, by default "OddSet object"
+        """
         # Default values
         if nickname is None:
             nickname = "OddSet object"
@@ -399,8 +462,6 @@ class OddSet(LinkedBSFSet):
                          left_set=left_set,
                          nickname=nickname)
 
-        # Initial values (for type checking ordering)
-
         # Set values (using setter method)
         self.left_map = left_map
 
@@ -408,9 +469,6 @@ class OddSet(LinkedBSFSet):
         return f"OddSet({self.bsf_array}, {self.magnitudes}, "\
             f"{self.nickname}, {self.hamiltonian}, {self.left_set}, "\
             f"{self.right_set}, {self.left_map}, {self.right_map})"
-
-    def __str__(self) -> str:
-        return super().__str__()
 
     @property
     def left_map(self):
@@ -423,25 +481,24 @@ class OddSet(LinkedBSFSet):
         # Check input of left_map
         if not isinstance(value, list):
             raise TypeError("Argument 'left_map' must be a list.")
-        if len(value) != self._hamiltonian._num_variables:
+        if len(value) != self.hamiltonian.num_variables:
             raise ValueError("Argument 'left_map' must have length equal "
-                                "to number of variables in Hamiltonian")
+                             "to number of variables in Hamiltonian")
         for tmp_var_left_map in value:
-            if not (isinstance(tmp_var_left_map, csr_array) or
-                    isinstance(tmp_var_left_map, csc_array)):
+            if not isinstance(tmp_var_left_map, (csr_array, csc_array)):
                 raise TypeError("Argument 'left map' must have elements "
                                 "of type csr_array or csc_array")
             if not issubdtype(tmp_var_left_map.dtype, floating):
                 raise TypeError("Argument 'left_map' data type must be "
                                 "subclass of numpy.floating.")
-            if tmp_var_left_map.shape[0] != self._left_set._num_terms:
+            if tmp_var_left_map.shape[0] != self.left_set.num_terms:
                 raise ValueError("Argument 'left_map' must have the number "
-                                    "of rows equal to the number of "
-                                    "terms in left set")
+                                 "of rows equal to the number of "
+                                 "terms in left set")
             if tmp_var_left_map.shape[1] != self._num_terms:
                 raise ValueError("Argument 'left_map' must have the number "
-                                    "of columns equal to the number of "
-                                    "terms of itself")
+                                 "of columns equal to the number of "
+                                 "terms of itself")
         self._left_map = value
 
     @property
@@ -458,25 +515,24 @@ class OddSet(LinkedBSFSet):
         # Check input of left_map
         if not isinstance(value, list):
             raise TypeError("Argument 'right_map' must be a list.")
-        if len(value) != self._hamiltonian._num_variables:
+        if len(value) != self.hamiltonian.num_variables:
             raise ValueError("Argument 'right_map' must have length equal "
-                                "to number of variables in Hamiltonian")
+                             "to number of variables in Hamiltonian")
         for tmp_var_right_map in value:
-            if not (isinstance(tmp_var_right_map, csr_array) or
-                    isinstance(tmp_var_right_map, csc_array)):
+            if not isinstance(tmp_var_right_map, (csr_array, csc_array)):
                 raise TypeError("Argument 'right map' must have elements "
                                 "of type csr_array or csc_array")
             if not issubdtype(tmp_var_right_map.dtype, floating):
                 raise TypeError("Argument 'right_map' data type must be "
                                 "subclass of numpy.floating.")
-            if tmp_var_right_map.shape[0] != self._right_set._num_terms:
+            if tmp_var_right_map.shape[0] != self.right_set.num_terms:
                 raise ValueError("Argument 'right_map' must have the number"
-                                    " of rows equal to the number of "
-                                    "magnitudes/terms in right set")
+                                 " of rows equal to the number of "
+                                 "magnitudes/terms in right set")
             if tmp_var_right_map.shape[1] != self._num_terms:
                 raise ValueError("Argument 'right_map' must have the number"
-                                    " of columns equal to the number of "
-                                    "magnitudes/terms of itself")
+                                 " of columns equal to the number of "
+                                 "magnitudes/terms of itself")
         self._right_map = value
 
     def generate_even(self):

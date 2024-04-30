@@ -14,10 +14,13 @@
 
 """Module for generating an AGP object via a meta graph approach
 """
-
+# Disable some pylint errors that are not important
+# can fix these at a later date
+# pylint: disable=unused-argument, too-many-locals
 import warnings
 
 from numpy import concatenate, issubdtype, array, shape, pad
+from numpy.typing import ArrayLike
 from numpy.linalg import solve as numpy_solve
 from numpy import integer
 from scipy.linalg import block_diag
@@ -27,14 +30,27 @@ from magpy.hamiltonian import Hamiltonian
 from magpy.agp import AGP
 from magpy.decorators import add_nickname, immutable
 
+
 @add_nickname("MetaGraph object")
 class MetaGraph:
+    """Class for generating the AGP via a meta graph approach
+    """
 
     def __init__(self,
                  hamiltonian: Hamiltonian,
                  lambda_index: integer,
                  nickname: str = None):
+        """Create MetaGraph object
 
+        Parameters
+        ----------
+        hamiltonian : Hamiltonian
+            hamiltonian of the system
+        lambda_index : integer
+            index associated with varying variable
+        nickname : str, optional
+            nickname for the class, by default MetaGraph object
+        """
         self._exact = False
 
         # Setup initially empty attributes
@@ -57,10 +73,11 @@ class MetaGraph:
             self.nickname = nickname
 
     def __repr__(self):
-        return "TODO"
+        return f"MetaGraph({self.hamiltonian}, {self.lambda_index}," \
+            f"{self.nickname})"
 
     def __str__(self):
-        return "TODO"
+        return f"{self.nickname} with lambda index: {self.lambda_index}"
 
     @property
     def hamiltonian(self):
@@ -169,14 +186,14 @@ class MetaGraph:
 
         # If still more left add the left map and continue
         self._odd_sets.append(new_odd)
-        tmp_left_map = self._odd_sets[-1]._left_map
+        tmp_left_map = self._odd_sets[-1].left_map
         self._left_lam_maps.append(tmp_left_map[self.lambda_index])
         tmp_left_map.pop(self.lambda_index)
         self._left_const_maps.append(tmp_left_map)
 
         # Right map
         self._even_sets.append(self._odd_sets[-1].generate_even())
-        tmp_right_map = self._odd_sets[-1]._right_map
+        tmp_right_map = self._odd_sets[-1].right_map
         self._right_lam_maps.append(tmp_right_map[self.lambda_index])
         tmp_right_map.pop(self.lambda_index)
         self._right_const_maps.append(tmp_right_map)
@@ -210,14 +227,33 @@ class MetaGraph:
 
     def _solve_numpy(self, hessian, initial, args):
         # Dense solver using numpy.linalg.solve()
-        print(hessian)
-        print(initial)
         return numpy_solve(hessian, initial)
 
-    def compute_AGP(self, lambda_values, constant_values, max_odd=None,
-                    solver='numpy', solver_args=None):
-        # Solve the Hessian for a list of values of the variable and return an
-        # AGP object
+    def compute_agp(self, lambda_values: ArrayLike, constant_values: ArrayLike,
+                    max_odd: int = None, solver: str = 'numpy',
+                    solver_args: tuple = None) -> AGP:
+        """Solve the Hessian for a list of values of the variable and return an
+        AGP object
+
+        Parameters
+        ----------
+        lambda_values : ArrayLike
+            values for the lambda parameter to take along the path
+        constant_values : ArrayLike
+            constant values of all the other Hamiltonian variables
+        max_odd : int, optional
+            how many odd meta graph site to generate, by default set to
+            current generated
+        solver : str, optional
+            solver to use options are: 'numpy', by default 'numpy'
+        solver_args : tuple, optional
+            args to be passed to the solver, by default None
+
+        Returns
+        -------
+        AGP : AGP
+            AGP object generated from meta graph
+        """
 
         # Parse lambda_values and constant_values
         lambda_values = self._parse_lambda_values(value=lambda_values)
@@ -259,11 +295,11 @@ class MetaGraph:
 
         # Build polynomial in variable (axis = power of lambda)
         base_diag = [[], [], []]
-        for index, (left_const, right_const, left_lam, right_lam) \
-            in enumerate(zip(left_constant_maps[:max_odd],
-                             right_constant_maps[:max_odd],
-                             self._left_lam_maps[:max_odd],
-                             self._right_lam_maps[:max_odd])):
+        for left_const, right_const, left_lam, right_lam \
+            in zip(left_constant_maps[:max_odd],
+                   right_constant_maps[:max_odd],
+                   self._left_lam_maps[:max_odd],
+                   self._right_lam_maps[:max_odd]):
             # left-left and right-right
             base_diag[0].append(left_const.T @ left_const +
                                 right_const.T @ right_const)

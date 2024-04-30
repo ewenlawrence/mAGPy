@@ -19,10 +19,12 @@ from typing import List, Optional
 from magpy.bsf_set import BSFSetBase
 from magpy.decorators import add_nickname
 
+
 @add_nickname("Hamiltonian object")
 class Hamiltonian:
     """Class of the hamiltonian
     """
+
     def __init__(self,
                  list_of_bsf: List[BSFSetBase],
                  variable_names: List[str],
@@ -93,3 +95,8 @@ class Hamiltonian:
             raise ValueError("Argument 'variable_names' must be same "
                              "length as the number of bsf sets")
         self._variable_names = value
+
+    @property
+    def num_variables(self):
+        """Number of variables in hamiltonian"""
+        return self._num_variables

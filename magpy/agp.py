@@ -11,6 +11,11 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+"""Module for storing generated AGP information
+"""
+# pylint: disable=duplicate-code
+# disable duplicate code for now, as there are shared attributes here
+# in a code cleanup this can be refactored
 
 from typing import List
 
@@ -25,6 +30,8 @@ from magpy.decorators import add_nickname, immutable
 
 @add_nickname("AGP object")
 class AGP:
+    """Class for storing generated AGP data
+    """
 
     def __init__(self,
                  hamiltonian: Hamiltonian,
@@ -35,7 +42,27 @@ class AGP:
                  coefficients: ndarray,
                  exact: bool,
                  nickname: str = None):
+        """Create AGP object
 
+        Parameters
+        ----------
+        hamiltonian : Hamiltonian
+            hamiltonian of the system
+        lambda_index : integer
+            index associated with varying variable
+        lambda_values : ArrayLike
+            values for the lambda parameter to take along the path
+        constant_values : ArrayLike
+            constant values of all the other Hamiltonian variables
+        operators : List[OddSet]
+            list of AGP operators
+        coefficients : ndarray
+            coefficients for each respective operator
+        exact : bool
+            whether the result is exact or approximate
+        nickname : str, optional
+            nickname for the class, by default AGP object
+        """
         # Set attributes
         self.hamiltonian = hamiltonian
         self.lambda_index = lambda_index
@@ -80,7 +107,7 @@ class AGP:
             raise TypeError("Argument 'lambda_index' must be an integer")
         if value >= len(self._hamiltonian.variable_names):
             raise ValueError("Argument 'lambda_index' must be a valid index "
-                                "for the hamiltonian lambda names")
+                             "for the hamiltonian lambda names")
         self._lambda_index = value
 
     def _parse_lambda_values(self, value):
@@ -150,23 +177,15 @@ class AGP:
         return self._operators
 
     @operators.setter
+    @immutable("operators")
     def operators(self, value):
-        # Make immutable by only setting if attribute is empty
-        try:
-            self._operators
-            raise ValueError("Argument 'operators' is immutable and "
-                             "already has a value set")
-        except ValueError as e:
-            raise e
-        except AttributeError:
-            if not isinstance(value, list):
-                raise TypeError("Argument 'operators' should be a list")
-            for op in value:
-                if not isinstance(op, OddSet):
-                    raise TypeError("Argument 'operators' should contain "
-                                    "OddSet")
-            self._num_operators = len(value)
-            self._operators = value
+        if not isinstance(value, list):
+            raise TypeError("Argument 'operators' should be a list")
+        for op in value:
+            if not isinstance(op, OddSet):
+                raise TypeError("Argument 'operators' should contain "
+                                "OddSet")
+        self._operators = value
 
     @property
     def coefficients(self):
